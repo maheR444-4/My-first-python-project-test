@@ -1,0 +1,115 @@
+import pygame
+import random
+
+pygame.init()
+
+# اندازه صفحه
+WIDTH = 600
+HEIGHT = 400
+BLOCK = 20
+
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Snake Game")
+
+clock = pygame.time.Clock()
+
+# رنگ‌ها
+BLACK = (0, 0, 0)
+GREEN = (0, 200, 0)
+RED = (200, 0, 0)
+WHITE = (255, 255, 255)
+
+# مار
+snake = [(300, 200), (280, 200), (260, 200)]
+direction = (BLOCK, 0)
+
+# غذا
+food = (
+    random.randrange(0, WIDTH, BLOCK),
+    random.randrange(0, HEIGHT, BLOCK)
+)
+
+score = 0
+running = True
+
+while running:
+
+    # گرفتن ورودی
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN:
+
+            if event.key == pygame.K_UP and direction != (0, BLOCK):
+                direction = (0, -BLOCK)
+
+            elif event.key == pygame.K_DOWN and direction != (0, -BLOCK):
+                direction = (0, BLOCK)
+
+            elif event.key == pygame.K_LEFT and direction != (BLOCK, 0):
+                direction = (-BLOCK, 0)
+
+            elif event.key == pygame.K_RIGHT and direction != (-BLOCK, 0):
+                direction = (BLOCK, 0)
+
+    # حرکت سر مار
+    head_x, head_y = snake[0]
+    dx, dy = direction
+
+    new_head = (head_x + dx, head_y + dy)
+
+    # برخورد با دیوار
+    if (
+        new_head[0] < 0 or
+        new_head[0] >= WIDTH or
+        new_head[1] < 0 or
+        new_head[1] >= HEIGHT
+    ):
+        running = False
+
+    # برخورد با خودش
+    if new_head in snake:
+        running = False
+
+    snake.insert(0, new_head)
+
+    # خوردن غذا
+    if new_head == food:
+        score += 1
+
+        food = (
+            random.randrange(0, WIDTH, BLOCK),
+            random.randrange(0, HEIGHT, BLOCK)
+        )
+    else:
+        snake.pop()
+
+    # رسم صفحه
+    screen.fill(BLACK)
+
+    # رسم مار
+    for part in snake:
+        pygame.draw.rect(
+            screen,
+            GREEN,
+            (part[0], part[1], BLOCK, BLOCK)
+        )
+
+    # رسم غذا
+    pygame.draw.rect(
+        screen,
+        RED,
+        (food[0], food[1], BLOCK, BLOCK)
+    )
+
+    # امتیاز
+    font = pygame.font.SysFont(None, 30)
+    text = font.render(f"Score: {score}", True, WHITE)
+    screen.blit(text, (10, 10))
+
+    pygame.display.update()
+
+    clock.tick(10)
+
+pygame.quit()
